@@ -1,12 +1,13 @@
 package com.nhinds.lastpass.impl;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MultivaluedMap;
+
+import org.w3c.dom.Document;
 
 import com.google.common.base.Objects;
 import com.nhinds.lastpass.GoogleAuthenticatorRequired;
@@ -16,6 +17,7 @@ import com.nhinds.lastpass.PasswordStore;
 import com.nhinds.lastpass.impl.dto.LastPassOk;
 import com.nhinds.lastpass.impl.dto.LastPassResponse;
 import com.nhinds.lastpass.impl.dto.LastPassResponse.LastPassError;
+import com.nhinds.lastpass.impl.dto.reader.DtoReader;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
@@ -28,18 +30,20 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 	private final String password;
 	private final File cacheFile;// TODO use me
 	private final KeyProvider keyProvider;
+	private final DtoReader dtoReader;
 
 	private int iterations = 1;
 	private byte[] key;
 	private String hash;
 
 	public LastPassBuilderImpl(final Client client, final String username, final String password, final File cacheFile,
-			final KeyProvider keyProvider) {
+			final KeyProvider keyProvider, final DtoReader dtoReader) {
 		this.client = client;
 		this.username = username;
 		this.password = password;
 		this.cacheFile = cacheFile;
 		this.keyProvider = keyProvider;
+		this.dtoReader = dtoReader;
 	}
 
 	@Override
@@ -112,32 +116,31 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 		options.putSingle("iterations", Integer.toString(this.iterations));
 		final ClientResponse clientResponse = this.client.resource("https://lastpass.com/login.php").post(
 				ClientResponse.class, options);
-		clientResponse.bufferEntity();
-		try {
-			return clientResponse.getEntity(LastPassOk.class);
-		} catch (final RuntimeException okException) {
-			try {
-				clientResponse.getEntityInputStream().reset();
-			} catch (final IOException e) {
-				throw new IllegalStateException("This should never happen, reset should always work on a ByteArrayInputStream", e);
-			}
-			final LastPassResponse response = clientResponse.getEntity(LastPassResponse.class);
+		final Document doc = clientResponse.getEntity(Document.class);
 
+		// Try interpreting it as an OK response
+		final LastPassOk ok = this.dtoReader.read(doc, LastPassOk.class);
+		if (ok != null)
+			return ok;
+
+		// Try interpreting it as a generic response
+		final LastPassResponse response = this.dtoReader.read(doc, LastPassResponse.class);
+		if (response != null && response.getError() != null) {
 			final LastPassError error = response.getError();
-			if (error != null) {
-				if (error.getIterations() != null && error.getIterations().intValue() != this.iterations) {
-					if (this.iterations != 1)
-						throw new IllegalStateException("Expected " + this.iterations + " iterations but response indicated "
-								+ error.getIterations());
-					this.iterations = error.getIterations();
-					this.key = null;
-					this.hash = null;
-					return login(otp);
-				} else
-					throw new ErrorResponseException(error, okException);
-			}
-			throw new LastPassException("No error found but unsuccessful response: " + clientResponse, okException);
+			// If the error is caused by using the incorrect number of
+			// iterations in the encryption, try again with the correct number
+			if (error.getIterations() != null && error.getIterations().intValue() != this.iterations) {
+				if (this.iterations != 1)
+					throw new IllegalStateException("Expected " + this.iterations + " iterations but response indicated "
+							+ error.getIterations());
+				this.iterations = error.getIterations();
+				this.key = null;
+				this.hash = null;
+				return login(otp);
+			} else
+				throw new ErrorResponseException(error);
 		}
+		throw new LastPassException("No error found but unsuccessful response: " + clientResponse);
 	}
 
 	private static class ErrorResponseException extends LastPassException {
@@ -145,8 +148,8 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 
 		private final LastPassError error;
 
-		public ErrorResponseException(final LastPassError error, final Throwable cause) {
-			super("Error logging in: " + error.getMessage() + " (" + error.getCause() + ")", cause);
+		public ErrorResponseException(final LastPassError error) {
+			super("Error logging in: " + error.getMessage() + " (" + error.getCause() + ")");
 			this.error = error;
 		}
 

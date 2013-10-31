@@ -1,12 +1,9 @@
 package com.nhinds.lastpass.impl.dto;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "ok")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class LastPassOk {
 	@XmlAttribute
 	private int uid;
@@ -33,35 +30,35 @@ public class LastPassOk {
 	private int accountsVersion;
 
 	public int getUid() {
-		return uid;
+		return this.uid;
 	}
 
 	public String getUidHash() {
-		return uidHash;
+		return this.uidHash;
 	}
 
 	public String getSessionId() {
-		return sessionId;
+		return this.sessionId;
 	}
 
 	public boolean isPasswordResetRequired() {
-		return passwordResetRequired;
+		return this.passwordResetRequired;
 	}
 
 	public String getToken() {
-		return token;
+		return this.token;
 	}
 
 	public boolean isAdLogin() {
-		return adLogin;
+		return this.adLogin;
 	}
 
 	public boolean isDisableoffline() {
-		return disableoffline;
+		return this.disableoffline;
 	}
 
 	public int getAccountsVersion() {
-		return accountsVersion;
+		return this.accountsVersion;
 	}
 
 }
