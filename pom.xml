@@ -12,6 +12,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<exec.mainClass>com.nhinds.lastpass.impl.LastPassImpl</exec.mainClass>
 		<!-- sadly we need to target java 6 for android's Dx to like us -->
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<maven.compiler.target>1.6</maven.compiler.target>
