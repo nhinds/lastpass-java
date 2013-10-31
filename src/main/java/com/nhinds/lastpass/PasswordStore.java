@@ -7,5 +7,5 @@ public interface PasswordStore {
 
 	Collection<PasswordInfo> getPasswordsByHostname(String hostname);
 
-	PasswordInfo getPassword(int id);
+	PasswordInfo getPassword(long id);
 }

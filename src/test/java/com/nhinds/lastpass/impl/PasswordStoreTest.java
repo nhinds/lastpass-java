@@ -25,7 +25,7 @@ import com.nhinds.lastpass.PasswordInfo;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PasswordStoreTest {
-	private final Map<Integer, AccountData> accounts = new HashMap<Integer, AccountData>();
+	private final Map<Long, AccountData> accounts = new HashMap<Long, AccountData>();
 	private final Map<String, Collection<String>> domains = new HashMap<String, Collection<String>>();
 	@Mock
 	private PasswordStoreReader passwordStoreReader;
@@ -42,7 +42,7 @@ public class PasswordStoreTest {
 	@Test
 	public void getById() {
 		final AccountData accountData = mock(AccountData.class);
-		this.accounts.put(17, accountData);
+		this.accounts.put(17L, accountData);
 
 		final PasswordInfo password = this.passwordStore.getPassword(17);
 
@@ -58,8 +58,8 @@ public class PasswordStoreTest {
 	public void listPasswords() {
 		final AccountData accountData = mock(AccountData.class);
 		final AccountData accountData2 = mock(AccountData.class);
-		this.accounts.put(1, accountData);
-		this.accounts.put(2, accountData2);
+		this.accounts.put(1L, accountData);
+		this.accounts.put(2L, accountData2);
 
 		final Collection<? extends PasswordInfo> passwords = this.passwordStore.getPasswords();
 
@@ -125,7 +125,7 @@ public class PasswordStoreTest {
 		when(hostMatch.getUrl()).thenReturn("http://hostonly#");
 		final AccountData ipMatch = mock(AccountData.class);
 		when(ipMatch.getUrl()).thenReturn("https://1.2.3.4");
-		this.accounts.putAll(ImmutableMap.of(1, domainMatch, 2, domainAlias, 3, subdomainMatch, 4, hostMatch, 5, ipMatch));
+		this.accounts.putAll(ImmutableMap.of(1L, domainMatch, 2L, domainAlias, 3L, subdomainMatch, 4L, hostMatch, 5L, ipMatch));
 		// Non-matching urls
 		final AccountData domainMismatch = mock(AccountData.class);
 		when(domainMismatch.getUrl()).thenReturn("http://example.com");
@@ -139,8 +139,9 @@ public class PasswordStoreTest {
 		when(invalidUrl.getUrl()).thenReturn(":notvalid:url!");
 		final AccountData invalidUrl2 = mock(AccountData.class);
 		when(invalidUrl2.getUrl()).thenReturn("notvalidurl");
-		this.accounts.putAll(ImmutableMap.of(11, domainMismatch, 12, ipMismatch, 13, subdomainMismatch, 14, hostMismatch, 15, invalidUrl));
-		this.accounts.put(16, invalidUrl2);
+		this.accounts.putAll(ImmutableMap.of(11L, domainMismatch, 12L, ipMismatch, 13L, subdomainMismatch, 14L, hostMismatch, 15L,
+				invalidUrl));
+		this.accounts.put(16L, invalidUrl2);
 
 		final Collection<PasswordInfo> passwords = this.passwordStore.getPasswordsByHostname("myhost.com");
 

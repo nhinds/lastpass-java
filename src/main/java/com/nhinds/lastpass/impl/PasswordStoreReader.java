@@ -20,7 +20,7 @@ public class PasswordStoreReader {
 
 	private final DecryptionProvider decryptionProvider;
 	private final Map<String, Collection<byte[]>> chunks;
-	private Map<Integer, AccountData> accounts;
+	private Map<Long, AccountData> accounts;
 	private Map<String, Collection<String>> domains;
 
 	public PasswordStoreReader(final InputStream accountsStream, final DecryptionProvider decryptionProvider) {
@@ -79,8 +79,8 @@ public class PasswordStoreReader {
 		return new String(readItem(in));
 	}
 
-	private static int readIntItem(final DataInputStream acctIn) throws IOException {
-		return Integer.parseInt(readStringItem(acctIn));
+	private static long readLongItem(final DataInputStream acctIn) throws IOException {
+		return Long.parseLong(readStringItem(acctIn));
 	}
 
 	private static String readHexItem(final DataInputStream in) throws IOException {
@@ -92,14 +92,14 @@ public class PasswordStoreReader {
 		}
 	}
 
-	public Map<Integer, AccountData> getAccounts() {
+	public Map<Long, AccountData> getAccounts() {
 		if (this.accounts == null) {
-			this.accounts = new HashMap<Integer, AccountData>();
+			this.accounts = new HashMap<Long, AccountData>();
 			try {
 				for (final byte[] chunkData : this.chunks.get(ACCT_CHUNK_ID)) {
 					final DataInputStream acctIn = new DataInputStream(new ByteArrayInputStream(chunkData));
 					// TODO how many of these "strings" are not strings?
-					final int id = readIntItem(acctIn);
+					final long id = readLongItem(acctIn);
 					final byte[] name = readItem(acctIn);
 					final byte[] group = readItem(acctIn);
 					final String url = readHexItem(acctIn);
@@ -144,10 +144,10 @@ public class PasswordStoreReader {
 		if (this.domains == null) {
 			this.domains = new HashMap<String, Collection<String>>();
 			try {
-				final Map<Integer, Collection<String>> domainsById = new HashMap<Integer, Collection<String>>();
+				final Map<Long, Collection<String>> domainsById = new HashMap<Long, Collection<String>>();
 				for (final byte[] chunkData : this.chunks.get(EQDN_CHUNK_ID)) {
 					final DataInputStream eqdnIn = new DataInputStream(new ByteArrayInputStream(chunkData));
-					final int id = readIntItem(eqdnIn);
+					final long id = readLongItem(eqdnIn);
 					final String domain = readHexItem(eqdnIn);
 					Collection<String> domainsForId = domainsById.get(id);
 					if (domainsForId == null) {

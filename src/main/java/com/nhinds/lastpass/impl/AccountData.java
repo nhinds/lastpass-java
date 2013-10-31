@@ -26,7 +26,7 @@ public class AccountData implements PasswordInfo {
 		}
 	}
 
-	private final int id;
+	private final long id;
 	private final EncryptedString name;
 	private final EncryptedString group;
 	private final String url;
@@ -57,7 +57,7 @@ public class AccountData implements PasswordInfo {
 	private final String unknown1;
 	private final DecryptionProvider decryptionProvider;
 
-	public AccountData(final int id, final byte[] name, final byte[] group, final String url, final String extra, final String favourite,
+	public AccountData(final long id, final byte[] name, final byte[] group, final String url, final String extra, final String favourite,
 			final String sharedFromId,
 			final byte[] username, final byte[] password, final String passwordProtected, final String sn, final String lastTouched, final String autoLogin,
 			final String neverAutofill, final String realmData, final String fiid, final String customJs, final String submitId, final String captchaId, final String urid,
@@ -119,7 +119,7 @@ public class AccountData implements PasswordInfo {
 	// Regular fields
 
 	@Override
-	public int getId() {
+	public long getId() {
 		return this.id;
 	}
 

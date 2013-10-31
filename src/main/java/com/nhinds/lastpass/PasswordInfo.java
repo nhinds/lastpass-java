@@ -1,7 +1,7 @@
 package com.nhinds.lastpass;
 
 public interface PasswordInfo {
-	int getId();
+	long getId();
 
 	String getUrl();
 

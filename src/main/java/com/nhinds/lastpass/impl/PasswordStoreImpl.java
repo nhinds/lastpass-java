@@ -28,7 +28,7 @@ public class PasswordStoreImpl implements PasswordStore {
 	}
 
 	@Override
-	public PasswordInfo getPassword(final int id) {
+	public PasswordInfo getPassword(final long id) {
 		final AccountData accountData = this.passwordStoreReader.getAccounts().get(id);
 		if (accountData == null)
 			throw new IllegalArgumentException("Unknown account " + id);
