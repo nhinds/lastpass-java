@@ -61,7 +61,7 @@ public class PasswordStoreImpl implements PasswordStore {
 		final Collection<String> candidateDomains = this.passwordStoreReader.getDomains().get(resolvedName);
 		if (candidateDomains != null)
 			return candidateDomains;
-		return Collections.singleton(host);
+		return Collections.singleton(resolvedName);
 	}
 
 	private String resolveHost(final String host) {

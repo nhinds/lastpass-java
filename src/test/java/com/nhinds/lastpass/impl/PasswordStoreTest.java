@@ -96,6 +96,12 @@ public class PasswordStoreTest {
 	}
 
 	@Test
+	public void getCandidateDomainsReturnsDomainForSubdomainWithoutCandidates() {
+		final Collection<String> candidateDomains = this.passwordStore.getCandidateDomains("foo.example.com");
+		assertThat(candidateDomains, contains("example.com"));
+	}
+
+	@Test
 	public void getCandidateDomainsReturnsCandidatesForIP() {
 		this.domains.put("1.2.3.4", Arrays.asList("1.2.3.4", "foo.com"));
 
