@@ -15,8 +15,9 @@ public class LastPassTest {
 	@Test
 	public void getPasswordStoreBuilderReturnsConfiguredBuilder() {
 		final Client client = mock(Client.class);
-		final PasswordStoreBuilder passwordStoreBuilder = new LastPassImpl(client).getPasswordStoreBuilder("u", "b", new File("cache"));
-		assertEquals(new LastPassBuilderImpl(client, "u", "b", new File("cache"), new PBKDF2SHA256KeyProvider(), new DtoReader()),
+		final PasswordStoreBuilder passwordStoreBuilder = new LastPassImpl(client).getPasswordStoreBuilder("u", "b", new File("cache"),
+				"id");
+		assertEquals(new LastPassBuilderImpl(client, "u", "b", new File("cache"), "id", new PBKDF2SHA256KeyProvider(), new DtoReader()),
 				passwordStoreBuilder);
 	}
 }

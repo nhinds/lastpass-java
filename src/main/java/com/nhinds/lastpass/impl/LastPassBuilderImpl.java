@@ -29,6 +29,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 	private final String username;
 	private final String password;
 	private final File cacheFile;// TODO use me
+	private final String deviceId;
 	private final KeyProvider keyProvider;
 	private final DtoReader dtoReader;
 
@@ -37,11 +38,12 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 	private String hash;
 
 	public LastPassBuilderImpl(final Client client, final String username, final String password, final File cacheFile,
-			final KeyProvider keyProvider, final DtoReader dtoReader) {
+			final String deviceId, final KeyProvider keyProvider, final DtoReader dtoReader) {
 		this.client = client;
 		this.username = username;
 		this.password = password;
 		this.cacheFile = cacheFile;
+		this.deviceId = deviceId;
 		this.keyProvider = keyProvider;
 		this.dtoReader = dtoReader;
 	}
@@ -57,13 +59,13 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 			return false;
 		final LastPassBuilderImpl other = (LastPassBuilderImpl) obj;
 		return Objects.equal(this.username, other.username) && Objects.equal(this.password, other.password)
-				&& Objects.equal(this.cacheFile, other.cacheFile);
+				&& Objects.equal(this.cacheFile, other.cacheFile) && Objects.equal(this.deviceId, other.deviceId);
 	}
 
 	@Override
 	public PasswordStore getPasswordStore() throws GoogleAuthenticatorRequired {
 		try {
-			return getPasswordStore(null);
+			return getPasswordStore(null, null);
 		} catch (final LastPassBuilderImpl.ErrorResponseException e) {
 			if ("googleauthrequired".equals(e.getError().getCause()))
 				throw new GoogleAuthenticatorRequired(e.getError().getMessage(), e.getCause());
@@ -72,13 +74,16 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 	}
 
 	@Override
-	public PasswordStore getPasswordStore(final String otp) {
+	public PasswordStore getPasswordStore(final String otp, final String trustLabel) {
+		if (this.deviceId == null && trustLabel != null)
+			throw new IllegalArgumentException("Cannot specify a trusted device label if no device ID was provided");
+
 		try {
 			// try {
 			// TODO
 			// if (cacheFile.isFile())
 			// return new PasswordStoreImpl(new FileInputStream(cacheFile), getKey(username, password, ???));
-			final LastPassOk loginResponse = login(otp);
+			final LastPassOk loginResponse = login(otp, trustLabel);
 			final ClientResponse clientResponse = this.client.resource("https://lastpass.com/getaccts.php?mobile=1&hash=0.0")
 					.cookie(new Cookie(SESSION_COOKIE_NAME, loginResponse.getSessionId())).get(ClientResponse.class);
 			// clientResponse.bufferEntity();
@@ -97,7 +102,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 		}
 	}
 
-	private LastPassOk login(final String otp) throws GeneralSecurityException {
+	private LastPassOk login(final String otp, final String trustLabel) throws GeneralSecurityException {
 		if (this.key == null) {
 			this.key = this.keyProvider.getKey(this.username, this.password, this.iterations);
 		}
@@ -110,8 +115,14 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 		options.putSingle("xml", "1");
 		options.putSingle("username", this.username);
 		options.putSingle("hash", this.hash);
+		if (this.deviceId != null) {
+			options.putSingle("uuid", this.deviceId);
+		}
 		if (otp != null) {
 			options.putSingle("otp", otp);
+			if (trustLabel != null) {
+				options.putSingle("trustlabel", trustLabel);
+			}
 		}
 		options.putSingle("iterations", Integer.toString(this.iterations));
 		final ClientResponse clientResponse = this.client.resource("https://lastpass.com/login.php").post(
@@ -136,7 +147,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 				this.iterations = error.getIterations();
 				this.key = null;
 				this.hash = null;
-				return login(otp);
+				return login(otp, trustLabel);
 			} else
 				throw new ErrorResponseException(error);
 		}

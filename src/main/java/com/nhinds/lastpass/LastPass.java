@@ -18,14 +18,16 @@ public interface LastPass {
 		PasswordStore getPasswordStore() throws GoogleAuthenticatorRequired;
 
 		/**
-		 * Attempt to get the password store specifying a one-time password. This should generally only be called if
-		 * {@link #getPasswordStore()} throws a {@link GoogleAuthenticatorRequired} exception
+		 * Attempt to get the password store specifying a one-time password, and optionally trust the current device. This should generally
+		 * only be called if {@link #getPasswordStore()} throws a {@link GoogleAuthenticatorRequired} exception
 		 * 
 		 * @param otp
 		 *            The one-time password
+		 * @param trustLabel
+		 *            The label to use for this trusted device in lastpass, or null to not trust this device
 		 * @return The password store for the configured user
 		 */
-		PasswordStore getPasswordStore(String otp);
+		PasswordStore getPasswordStore(String otp, String trustLabel);
 	}
 
 	/**
@@ -37,9 +39,11 @@ public interface LastPass {
 	 *            The password for the LastPass account
 	 * @param cacheFile
 	 *            TODO use this
+	 * @param deviceId
+	 *            The identifier for the current device (may be null, in which case the device will not be able to be trusted)
 	 * @return A builder which can retrieve the password store for the given user
 	 * @throws LastPassException
 	 *             if there is an error logging in
 	 */
-	PasswordStoreBuilder getPasswordStoreBuilder(String username, String password, File cacheFile);
+	PasswordStoreBuilder getPasswordStoreBuilder(String username, String password, File cacheFile, String deviceId);
 }
