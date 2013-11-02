@@ -18,6 +18,8 @@ import com.google.api.client.xml.XmlObjectParser;
 import com.google.common.base.Objects;
 import com.nhinds.lastpass.GoogleAuthenticatorRequired;
 import com.nhinds.lastpass.LastPass.PasswordStoreBuilder;
+import com.nhinds.lastpass.LastPass.ProgressListener;
+import com.nhinds.lastpass.LastPass.ProgressStatus;
 import com.nhinds.lastpass.LastPassException;
 import com.nhinds.lastpass.PasswordStore;
 import com.nhinds.lastpass.impl.dto.LastPassError;
@@ -73,9 +75,9 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 	}
 
 	@Override
-	public PasswordStore getPasswordStore() throws GoogleAuthenticatorRequired {
+	public PasswordStore getPasswordStore(final ProgressListener listener) throws GoogleAuthenticatorRequired {
 		try {
-			return getPasswordStore(null, null);
+			return getPasswordStore(null, null, listener);
 		} catch (final LastPassBuilderImpl.ErrorResponseException e) {
 			if ("googleauthrequired".equals(e.getError().getCause()))
 				throw new GoogleAuthenticatorRequired(e.getError().getMessage(), e.getCause());
@@ -84,7 +86,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 	}
 
 	@Override
-	public PasswordStore getPasswordStore(final String otp, final String trustLabel) {
+	public PasswordStore getPasswordStore(final String otp, final String trustLabel, final ProgressListener listener) {
 		if (this.deviceId == null && trustLabel != null)
 			throw new IllegalArgumentException("Cannot specify a trusted device label if no device ID was provided");
 
@@ -93,7 +95,14 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 			// TODO
 			// if (cacheFile.isFile())
 			// return new PasswordStoreImpl(new FileInputStream(cacheFile), getKey(username, password, ???));
+			if (listener != null)
+				listener.statusChanged(ProgressStatus.LOGGING_IN);
+
 			final LastPassOk loginResponse = login(otp, trustLabel);
+
+			if (listener != null)
+				listener.statusChanged(ProgressStatus.RETRIEVING);
+
 			final HttpRequest request = this.requestFactory
 					.buildGetRequest(new GenericUrl("https://lastpass.com/getaccts.php?mobile=1&hash=0.0"));
 			request.getHeaders().setCookie(SESSION_COOKIE_NAME + '=' + loginResponse.getSessionId());
@@ -104,6 +113,10 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 			// IOUtils.copy(entityInputStream, out);
 			// }
 			// entityInputStream.reset();
+
+			if (listener != null)
+				listener.statusChanged(ProgressStatus.DECRYPTING);
+
 			assert this.key != null;
 			return new PasswordStoreImpl(response.getContent(), new AESCBCDecryptionProvider(this.key));
 			// } catch (final IOException e) {

@@ -36,7 +36,7 @@ public class LastPassImpl implements LastPass {
 		PasswordStore passwordStore;
 		final PasswordStoreBuilder passwordStoreBuilder = lastPass.getPasswordStoreBuilder(username, password, null, deviceId);
 		try {
-			passwordStore = passwordStoreBuilder.getPasswordStore();
+			passwordStore = passwordStoreBuilder.getPasswordStore(null);
 		} catch (final GoogleAuthenticatorRequired e) {
 			final String otp = System.console().readLine("Enter OTP: ");
 			final String trustLabel;
@@ -44,7 +44,7 @@ public class LastPassImpl implements LastPass {
 				trustLabel = Strings.emptyToNull(System.console().readLine("Enter trust label (or keep blank for none): "));
 			else
 				trustLabel = null;
-			passwordStore = passwordStoreBuilder.getPasswordStore(otp, trustLabel);
+			passwordStore = passwordStoreBuilder.getPasswordStore(otp, trustLabel, null);
 		}
 		System.out.println(passwordStore.getPasswords());
 	}

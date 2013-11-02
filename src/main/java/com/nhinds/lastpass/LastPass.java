@@ -3,6 +3,15 @@ package com.nhinds.lastpass;
 import java.io.File;
 
 public interface LastPass {
+	/** Represents login progress */
+	enum ProgressStatus {
+		LOGGING_IN, RETRIEVING, DECRYPTING;
+	}
+
+	/** Listener interface which is notified about login progress */
+	interface ProgressListener {
+		void statusChanged(ProgressStatus status);
+	}
 	/**
 	 * An interface to retrieve the password store for a given user
 	 */
@@ -10,12 +19,14 @@ public interface LastPass {
 		/**
 		 * Attempt to get the password store without a one-time password
 		 * 
+		 * @param listener
+		 *            Listener to notify of status changes while getting the password store, may be null
 		 * @return The password store for the configured user
 		 * @throws GoogleAuthenticatorRequired
 		 *             if a one-time password is required. In this case, prompt the user for a one-time password then call
 		 *             {@link #getPasswordStore(String)}
 		 */
-		PasswordStore getPasswordStore() throws GoogleAuthenticatorRequired;
+		PasswordStore getPasswordStore(ProgressListener listener) throws GoogleAuthenticatorRequired;
 
 		/**
 		 * Attempt to get the password store specifying a one-time password, and optionally trust the current device. This should generally
@@ -25,9 +36,11 @@ public interface LastPass {
 		 *            The one-time password
 		 * @param trustLabel
 		 *            The label to use for this trusted device in lastpass, or null to not trust this device
+		 * @param listener
+		 *            Listener to notify of status changes while getting the password store, may be null
 		 * @return The password store for the configured user
 		 */
-		PasswordStore getPasswordStore(String otp, String trustLabel);
+		PasswordStore getPasswordStore(String otp, String trustLabel, ProgressListener listener);
 	}
 
 	/**
