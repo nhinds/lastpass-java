@@ -1,15 +1,13 @@
 package com.nhinds.lastpass.impl.dto;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
+import com.google.api.client.util.Key;
 
-@XmlType
 public class LastPassError {
-	@XmlAttribute
+	@Key("@message")
 	private String message;
-	@XmlAttribute
+	@Key("@cause")
 	private String cause;
-	@XmlAttribute
+	@Key("@iterations")
 	private Integer iterations;
 
 	public String getCause() {
@@ -22,5 +20,10 @@ public class LastPassError {
 
 	public String getMessage() {
 		return this.message;
+	}
+
+	@Override
+	public String toString() {
+		return "LastPassError [message=" + this.message + ", cause=" + this.cause + ", iterations=" + this.iterations + "]";
 	}
 }

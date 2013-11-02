@@ -1,15 +1,12 @@
 package com.nhinds.lastpass.impl.dto;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.google.api.client.util.Key;
 
-@XmlRootElement(name = "response")
 public class LastPassResponse {
-
-	@XmlElement
+	@Key
 	private LastPassError error;
 
-	@XmlElement
+	@Key
 	private LastPassOk ok;
 
 	public LastPassError getError() {
@@ -18,5 +15,10 @@ public class LastPassResponse {
 
 	public LastPassOk getOk() {
 		return this.ok;
+	}
+
+	@Override
+	public String toString() {
+		return "LastPassResponse [error=" + this.error + ", ok=" + this.ok + "]";
 	}
 }

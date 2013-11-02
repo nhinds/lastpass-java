@@ -1,29 +1,27 @@
 package com.nhinds.lastpass.impl.dto;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
+import com.google.api.client.util.Key;
 
-@XmlType
 public class LastPassOk {
-	@XmlAttribute
+	@Key("@uid")
 	private int uid;
 
-	@XmlAttribute(name = "sessionid")
+	@Key("@sessionid")
 	private String sessionId;
 
-	@XmlAttribute(name = "pwresetreqd")
+	@Key("@pwresetreqd")
 	private boolean passwordResetRequired;
 
-	@XmlAttribute
+	@Key("@token")
 	private String token;
 
-	@XmlAttribute(name = "adlogin")
+	@Key("@adlogin")
 	private boolean adLogin;
 
-	@XmlAttribute(name = "disableoffline")
+	@Key("@disableoffline")
 	private boolean disableoffline;
 
-	@XmlAttribute(name = "accts_version")
+	@Key("@accts_version")
 	private int accountsVersion;
 
 	public int getUid() {
@@ -54,4 +52,10 @@ public class LastPassOk {
 		return this.accountsVersion;
 	}
 
+	@Override
+	public String toString() {
+		return "LastPassOk [uid=" + this.uid + ", sessionId=" + this.sessionId + ", passwordResetRequired=" + this.passwordResetRequired
+				+ ", token=" + this.token + ", adLogin=" + this.adLogin + ", disableoffline=" + this.disableoffline + ", accountsVersion="
+				+ this.accountsVersion + "]";
+	}
 }

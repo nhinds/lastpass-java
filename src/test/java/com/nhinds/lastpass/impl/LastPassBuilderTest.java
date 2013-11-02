@@ -5,15 +5,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.sun.jersey.api.client.Client;
+import com.google.api.client.http.HttpTransport;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LastPassBuilderTest {
 	@Mock
-	private Client client;
+	private HttpTransport transport;
 
 	@Test
-	public void getPasswordStore() {
+	public void getPasswordStore() throws Exception {
 		// TODO
 	}
 }

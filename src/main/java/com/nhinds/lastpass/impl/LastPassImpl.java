@@ -3,29 +3,29 @@ package com.nhinds.lastpass.impl;
 import java.io.File;
 import java.security.GeneralSecurityException;
 
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.common.base.Strings;
 import com.nhinds.lastpass.GoogleAuthenticatorRequired;
 import com.nhinds.lastpass.LastPass;
 import com.nhinds.lastpass.PasswordStore;
-import com.nhinds.lastpass.impl.dto.reader.DtoReader;
-import com.sun.jersey.api.client.Client;
 
 public class LastPassImpl implements LastPass {
 
-	private final Client client;
+	private final HttpTransport transport;
 
 	public LastPassImpl() {
-		this(Client.create());
+		this(new NetHttpTransport());
 	}
 
-	public LastPassImpl(final Client client) {
-		this.client = client;
+	public LastPassImpl(final HttpTransport transport) {
+		this.transport = transport;
 	}
 
 	@Override
 	public PasswordStoreBuilder getPasswordStoreBuilder(final String username, final String password, final File cacheFile,
 			final String deviceId) {
-		return new LastPassBuilderImpl(this.client, username, password, cacheFile, deviceId, new PBKDF2SHA256KeyProvider(), new DtoReader());
+		return new LastPassBuilderImpl(this.transport, username, password, cacheFile, deviceId, new PBKDF2SHA256KeyProvider());
 	}
 
 	public static void main(final String[] args) throws GeneralSecurityException {
