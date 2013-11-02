@@ -14,9 +14,9 @@ import com.nhinds.lastpass.GoogleAuthenticatorRequired;
 import com.nhinds.lastpass.LastPass.PasswordStoreBuilder;
 import com.nhinds.lastpass.LastPassException;
 import com.nhinds.lastpass.PasswordStore;
+import com.nhinds.lastpass.impl.dto.LastPassError;
 import com.nhinds.lastpass.impl.dto.LastPassOk;
 import com.nhinds.lastpass.impl.dto.LastPassResponse;
-import com.nhinds.lastpass.impl.dto.LastPassResponse.LastPassError;
 import com.nhinds.lastpass.impl.dto.reader.DtoReader;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -110,9 +110,9 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 			this.hash = this.keyProvider.getHash(this.key, this.password, this.iterations);
 		}
 		final MultivaluedMap<String, String> options = new MultivaluedMapImpl();
-		options.putSingle("method", "mobile");
+		options.putSingle("method", "cr");
 		options.putSingle("web", "1");
-		options.putSingle("xml", "1");
+		options.putSingle("xml", "2");
 		options.putSingle("username", this.username);
 		options.putSingle("hash", this.hash);
 		if (this.deviceId != null) {
@@ -125,31 +125,34 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 			}
 		}
 		options.putSingle("iterations", Integer.toString(this.iterations));
+
 		final ClientResponse clientResponse = this.client.resource("https://lastpass.com/login.php").post(
 				ClientResponse.class, options);
 		final Document doc = clientResponse.getEntity(Document.class);
-
-		// Try interpreting it as an OK response
-		final LastPassOk ok = this.dtoReader.read(doc, LastPassOk.class);
-		if (ok != null)
-			return ok;
-
-		// Try interpreting it as a generic response
 		final LastPassResponse response = this.dtoReader.read(doc, LastPassResponse.class);
-		if (response != null && response.getError() != null) {
-			final LastPassError error = response.getError();
-			// If the error is caused by using the incorrect number of
-			// iterations in the encryption, try again with the correct number
-			if (error.getIterations() != null && error.getIterations().intValue() != this.iterations) {
-				if (this.iterations != 1)
-					throw new IllegalStateException("Expected " + this.iterations + " iterations but response indicated "
-							+ error.getIterations());
-				this.iterations = error.getIterations();
-				this.key = null;
-				this.hash = null;
-				return login(otp, trustLabel);
-			} else
-				throw new ErrorResponseException(error);
+
+		if (response != null) {
+			// Try interpreting it as an OK response
+			if (response.getOk() != null) {
+				return response.getOk();
+			}
+
+			// Try interpreting it as an error response
+			if (response.getError() != null) {
+				final LastPassError error = response.getError();
+				// If the error is caused by using the incorrect number of
+				// iterations in the encryption, try again with the correct number
+				if (error.getIterations() != null && error.getIterations().intValue() != this.iterations) {
+					if (this.iterations != 1)
+						throw new IllegalStateException("Expected " + this.iterations + " iterations but response indicated "
+								+ error.getIterations());
+					this.iterations = error.getIterations();
+					this.key = null;
+					this.hash = null;
+					return login(otp, trustLabel);
+				} else
+					throw new ErrorResponseException(error);
+			}
 		}
 		throw new LastPassException("No error found but unsuccessful response: " + clientResponse);
 	}

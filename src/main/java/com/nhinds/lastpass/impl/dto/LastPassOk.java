@@ -1,15 +1,12 @@
 package com.nhinds.lastpass.impl.dto;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name = "ok")
+@XmlType
 public class LastPassOk {
 	@XmlAttribute
 	private int uid;
-
-	@XmlAttribute(name = "uidhash")
-	private String uidHash;
 
 	@XmlAttribute(name = "sessionid")
 	private String sessionId;
@@ -31,10 +28,6 @@ public class LastPassOk {
 
 	public int getUid() {
 		return this.uid;
-	}
-
-	public String getUidHash() {
-		return this.uidHash;
 	}
 
 	public String getSessionId() {
