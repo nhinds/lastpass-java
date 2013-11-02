@@ -123,7 +123,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 			// throw new LastPassException(e);
 			// }
 		} catch (final IOException e) {
-			throw new LastPassException("Error connecting to LastPass", e);
+			throw new LastPassException("Error connecting to LastPass: " + e.getMessage(), e);
 		} catch (final GeneralSecurityException e) {
 			throw new LastPassException(e);
 		}
@@ -155,7 +155,12 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 
 		final HttpResponse clientResponse = this.requestFactory.buildPostRequest(new GenericUrl("https://lastpass.com/login.php"),
 				new UrlEncodedContent(options)).execute();
-		final LastPassResponse response = clientResponse.parseAs(LastPassResponse.class);
+		final LastPassResponse response;
+		try {
+			response = clientResponse.parseAs(LastPassResponse.class);
+		} catch (final RuntimeException e) {
+			throw new LastPassException("Error parsing login response: " + e.getMessage(), e);
+		}
 
 		if (response != null) {
 			// Try interpreting it as an OK response
