@@ -25,7 +25,8 @@ public class LastPassImpl implements LastPass {
 	@Override
 	public PasswordStoreBuilder getPasswordStoreBuilder(final String username, final String password, final File cacheFile,
 			final String deviceId) {
-		return new LastPassBuilderImpl(this.transport, username, password, cacheFile, deviceId, new PBKDF2SHA256KeyProvider());
+		return new LastPassBuilderImpl(this.transport, username, password, cacheFile, new LastPassLoginProvider(
+				new PBKDF2SHA256KeyProvider(), deviceId, this.transport));
 	}
 
 	public static void main(final String[] args) throws GeneralSecurityException {
