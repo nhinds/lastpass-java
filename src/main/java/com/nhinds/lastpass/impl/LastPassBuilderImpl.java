@@ -1,7 +1,10 @@
 package com.nhinds.lastpass.impl;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 
 import com.google.api.client.http.GenericUrl;
@@ -19,19 +22,27 @@ import com.nhinds.lastpass.PasswordStore;
 import com.nhinds.lastpass.impl.LastPassLoginProvider.LoginResult;
 
 class LastPassBuilderImpl implements PasswordStoreBuilder {
-	private static final String SESSION_COOKIE_NAME = "PHPSESSID";
+	static final String ACCOUNT_DATA_URL = "https://lastpass.com/getaccts.php?mobile=1&hash=0.0";
+	static final String SESSION_COOKIE_NAME = "PHPSESSID";
 
 	private final HttpRequestFactory requestFactory;
 	private final String username;
 	private final String password;
-	private final File cacheFile;// TODO use me
+	private final CacheProvider cacheProvider;
 	private final LastPassLoginProvider loginProvider;
+	private final PasswordStoreFactory passwordStoreFactory;
 
-	public LastPassBuilderImpl(final HttpTransport transport, final String username, final String password, final File cacheFile,
-			final LastPassLoginProvider loginProvider) {
+	public LastPassBuilderImpl(final HttpTransport transport, final String username, final String password,
+			final CacheProvider cacheProvider, final LastPassLoginProvider loginProvider) {
+		this(transport, username, password, cacheProvider, loginProvider, new PasswordStoreFactory());
+	}
+
+	LastPassBuilderImpl(final HttpTransport transport, final String username, final String password,
+			final CacheProvider cacheProvider, final LastPassLoginProvider loginProvider, final PasswordStoreFactory passwordStoreFactory) {
 		this.username = username;
 		this.password = password;
-		this.cacheFile = cacheFile;
+		this.cacheProvider = cacheProvider;
+		this.passwordStoreFactory = passwordStoreFactory;
 		this.requestFactory = transport.createRequestFactory();
 		this.loginProvider = loginProvider;
 	}
@@ -46,8 +57,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 		if (!(obj instanceof LastPassBuilderImpl))
 			return false;
 		final LastPassBuilderImpl other = (LastPassBuilderImpl) obj;
-		return Objects.equal(this.username, other.username) && Objects.equal(this.password, other.password)
-				&& Objects.equal(this.cacheFile, other.cacheFile);
+		return Objects.equal(this.username, other.username) && Objects.equal(this.password, other.password);
 	}
 
 	@Override
@@ -64,40 +74,93 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 	@Override
 	public PasswordStore getPasswordStore(final String otp, final String trustLabel, final ProgressListener listener) {
 		try {
-			// try {
-			// TODO
-			// if (cacheFile.isFile())
-			// return new PasswordStoreImpl(new FileInputStream(cacheFile), getKey(username, password, ???));
 			if (listener != null)
 				listener.statusChanged(ProgressStatus.LOGGING_IN);
 
-			final LoginResult loginResult = this.loginProvider.login(this.username, this.password, otp, trustLabel, 1);
+			final LoginResult loginResult = this.loginProvider.login(this.username, this.password, otp, trustLabel, getIterations());
 
-			if (listener != null)
-				listener.statusChanged(ProgressStatus.RETRIEVING);
+			InputStream accountData = getCachedAccountData(loginResult, loginResult.getAccountsVersion(), loginResult.getIterations());
+			if (accountData == null) {
+				if (loginResult.getSessionId() == null)
+					throw new LastPassException("LastPass is offline and no cached account data is available");
+				if (listener != null)
+					listener.statusChanged(ProgressStatus.RETRIEVING);
 
-			final HttpRequest request = this.requestFactory
-					.buildGetRequest(new GenericUrl("https://lastpass.com/getaccts.php?mobile=1&hash=0.0"));
-			request.getHeaders().setCookie(SESSION_COOKIE_NAME + '=' + loginResult.getSessionId());
-			final HttpResponse response = request.execute();
-			// clientResponse.bufferEntity();
-			// final InputStream entityInputStream = clientResponse.getEntityInputStream();
-			// try (FileOutputStream out = new FileOutputStream(cache)) {
-			// IOUtils.copy(entityInputStream, out);
-			// }
-			// entityInputStream.reset();
+				final HttpRequest request = this.requestFactory.buildGetRequest(new GenericUrl(ACCOUNT_DATA_URL));
+				request.getHeaders().setCookie(SESSION_COOKIE_NAME + '=' + loginResult.getSessionId());
+				final HttpResponse response = request.execute();
+				accountData = new CachingInputStream(loginResult, response.getContent());
+			}
 
 			if (listener != null)
 				listener.statusChanged(ProgressStatus.DECRYPTING);
 
-			return new PasswordStoreImpl(response.getContent(), new AESCBCDecryptionProvider(loginResult.getKey()));
-			// } catch (final IOException e) {
-			// throw new LastPassException(e);
-			// }
+			return this.passwordStoreFactory.getPasswordStore(accountData, new AESCBCDecryptionProvider(loginResult.getKey()));
 		} catch (final IOException e) {
 			throw new LastPassException("Error connecting to LastPass: " + e.getMessage(), e);
 		} catch (final GeneralSecurityException e) {
 			throw new LastPassException(e);
+		}
+	}
+
+	private InputStream getCachedAccountData(final LoginResult loginResult, final int accountsVersion, final int iterations) {
+		try {
+			final Integer cachedAccountsVersion = this.cacheProvider.getAccountVersion(this.username);
+			if (cachedAccountsVersion != null && cachedAccountsVersion.equals(accountsVersion) && getIterations() == iterations) {
+				return this.cacheProvider.getAccountData(this.username);
+			}
+		} catch (IOException ignore) {
+		}
+		return null;
+	}
+
+	private int getIterations() throws IOException {
+		Integer cachedIterations;
+		try {
+			cachedIterations = this.cacheProvider.getIterations(this.username);
+		} catch (IOException ignore) {
+			cachedIterations = null;
+		}
+		return cachedIterations == null ? 1 : cachedIterations;
+	}
+
+	private class CachingInputStream extends FilterInputStream {
+		private final ByteArrayOutputStream accountDataCopy = new ByteArrayOutputStream();
+		private final LoginResult loginResult;
+
+		public CachingInputStream(LoginResult loginResult, InputStream content) {
+			super(content);
+			this.loginResult = loginResult;
+		}
+
+		@Override
+		public int read() throws IOException {
+			int read = super.read();
+			if (read != -1)
+				this.accountDataCopy.write(read);
+			return read;
+		}
+
+		@Override
+		public int read(byte[] b, int off, int len) throws IOException {
+			int read = super.read(b, off, len);
+			if (read != -1)
+				this.accountDataCopy.write(b, off, read);
+			return read;
+		}
+
+		@Override
+		public void close() throws IOException {
+			super.close();
+			InputStream accountData = new ByteArrayInputStream(this.accountDataCopy.toByteArray());
+			LastPassBuilderImpl.this.cacheProvider.storeAccountData(LastPassBuilderImpl.this.username, this.loginResult.getIterations(),
+					this.loginResult.getAccountsVersion(), accountData);
+		}
+	}
+
+	static class PasswordStoreFactory {
+		public PasswordStore getPasswordStore(final InputStream accountsStream, final DecryptionProvider decryptionProvider) {
+			return new PasswordStoreImpl(accountsStream, decryptionProvider);
 		}
 	}
 }

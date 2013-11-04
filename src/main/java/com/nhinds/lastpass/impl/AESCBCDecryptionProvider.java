@@ -43,4 +43,15 @@ class AESCBCDecryptionProvider extends RequiresSpongyCastle implements Decryptio
 			throw new IOException("Well, I tried: " + this.encryptionKey.length, e);
 		}
 	}
+
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(this.encryptionKey);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof AESCBCDecryptionProvider)
+				&& Arrays.equals(this.encryptionKey, ((AESCBCDecryptionProvider) obj).encryptionKey);
+	}
 }

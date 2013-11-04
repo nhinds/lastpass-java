@@ -29,6 +29,11 @@ public class PasswordStoreReader {
 			this.chunks = readChunks(accountsStream);
 		} catch (final IOException e) {
 			throw new LastPassException("Error parsing blob", e);
+		} finally {
+			try {
+				accountsStream.close();
+			} catch (final IOException ignore) {
+			}
 		}
 		verifyChunks(ACCT_CHUNK_ID);
 		verifyChunks(EQDN_CHUNK_ID);

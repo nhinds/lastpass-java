@@ -1,6 +1,8 @@
 package com.nhinds.lastpass.impl;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +18,7 @@ import com.google.api.client.xml.XmlNamespaceDictionary;
 import com.google.api.client.xml.XmlObjectParser;
 import com.nhinds.lastpass.LastPassException;
 import com.nhinds.lastpass.impl.dto.LastPassError;
+import com.nhinds.lastpass.impl.dto.LastPassOk;
 import com.nhinds.lastpass.impl.dto.LastPassResponse;
 
 public class LastPassLoginProvider {
@@ -23,10 +26,14 @@ public class LastPassLoginProvider {
 	public static class LoginResult {
 		private final String sessionId;
 		private final byte[] key;
+		private final int accountsVersion;
+		private final int iterations;
 
-		public LoginResult(String sessionId, byte[] key) {
+		public LoginResult(String sessionId, byte[] key, int accountsVersion, int iterations) {
 			this.sessionId = sessionId;
 			this.key = key;
+			this.accountsVersion = accountsVersion;
+			this.iterations = iterations;
 		}
 
 		public String getSessionId() {
@@ -35,6 +42,14 @@ public class LastPassLoginProvider {
 
 		public byte[] getKey() {
 			return this.key;
+		}
+
+		public int getAccountsVersion() {
+			return this.accountsVersion;
+		}
+
+		public int getIterations() {
+			return this.iterations;
 		}
 	}
 
@@ -50,11 +65,13 @@ public class LastPassLoginProvider {
 
 	private final KeyProvider keyProvider;
 	private final String deviceId;
+	private final CacheProvider cacheProvider;
 	private final HttpRequestFactory requestFactory;
 
-	public LastPassLoginProvider(KeyProvider keyProvider, String deviceId, HttpTransport transport) {
+	public LastPassLoginProvider(KeyProvider keyProvider, String deviceId, CacheProvider cacheProvider, HttpTransport transport) {
 		this.keyProvider = keyProvider;
 		this.deviceId = deviceId;
+		this.cacheProvider = cacheProvider;
 		this.requestFactory = transport.createRequestFactory(XML_REQUEST_INITIALIZER);
 	}
 
@@ -87,19 +104,25 @@ public class LastPassLoginProvider {
 		}
 		options.put("iterations", iterations);
 
-		final HttpResponse clientResponse = this.requestFactory.buildPostRequest(new GenericUrl("https://lastpass.com/login.php"),
-				new UrlEncodedContent(options)).execute();
 		final LastPassResponse response;
+		final HttpResponse clientResponse;
 		try {
+			clientResponse = this.requestFactory.buildPostRequest(new GenericUrl("https://lastpass.com/login.php"),
+					new UrlEncodedContent(options)).execute();
 			response = clientResponse.parseAs(LastPassResponse.class);
+		} catch (final UnknownHostException e) {
+			return offlineLogin(username, iterations, key, e);
+		} catch (final ConnectException e) {
+			return offlineLogin(username, iterations, key, e);
 		} catch (final RuntimeException e) {
 			throw new LastPassException("Error parsing login response: " + e.getMessage(), e);
 		}
 
 		if (response != null) {
 			// Try interpreting it as an OK response
-			if (response.getOk() != null) {
-				return new LoginResult(response.getOk().getSessionId(), key);
+			LastPassOk ok = response.getOk();
+			if (ok != null) {
+				return new LoginResult(ok.getSessionId(), key, ok.getAccountsVersion(), iterations);
 			}
 
 			// Try interpreting it as an error response
@@ -117,5 +140,14 @@ public class LastPassLoginProvider {
 			}
 		}
 		throw new LastPassException("No error found but unsuccessful response: " + clientResponse + " (" + response + ")");
+	}
+
+	private LoginResult offlineLogin(String username, int iterations, byte[] key, IOException e) throws IOException {
+		Integer cachedIterations = this.cacheProvider.getIterations(username);
+		Integer cachedAccountsVersion = this.cacheProvider.getAccountVersion(username);
+		if (cachedIterations != null && cachedAccountsVersion != null && cachedIterations.intValue() == iterations) {
+			return new LoginResult(null, key, cachedAccountsVersion, iterations);
+		}
+		throw e;
 	}
 }

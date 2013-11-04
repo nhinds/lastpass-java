@@ -16,6 +16,6 @@ public class LastPassTest {
 		final HttpTransport transport = mock(HttpTransport.class);
 		final PasswordStoreBuilder passwordStoreBuilder = new LastPassImpl(transport).getPasswordStoreBuilder("u", "b", new File("cache"),
 				"id");
-		assertEquals(new LastPassBuilderImpl(transport, "u", "b", new File("cache"), null), passwordStoreBuilder);
+		assertEquals(new LastPassBuilderImpl(transport, "u", "b", null, null), passwordStoreBuilder);
 	}
 }
