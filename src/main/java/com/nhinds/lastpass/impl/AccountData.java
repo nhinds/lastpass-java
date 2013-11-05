@@ -27,7 +27,7 @@ public class AccountData implements PasswordInfo {
 	}
 
 	private final long id;
-	private final EncryptedString name;
+	private final String name;
 	private final EncryptedString group;
 	private final String url;
 	private final String extra;
@@ -64,7 +64,9 @@ public class AccountData implements PasswordInfo {
 			final String basicAuthorization, final String method, final String action, final String groupId, final String deleted, final String attachKey,
 			final String attachPresent, final String individualShare, final String unknown1, final DecryptionProvider decryptionProvider) {
 		this.id = id;
-		this.name = new EncryptedString(name);
+		// Decrypt the name up front because it is normally used for displaying/sorting. This also ensures that the decryption provider has
+		// the correct decryption key so future decryptions should succeed if this one does
+		this.name = decryptionProvider.decrypt(name);
 		this.group = new EncryptedString(group);
 		this.url = url;
 		this.extra = extra;
@@ -97,11 +99,6 @@ public class AccountData implements PasswordInfo {
 
 	// Encrypted fields
 
-	@Override
-	public String getName() {
-		return this.name.get();
-	}
-
 	public String getGroup() {
 		return this.group.get();
 	}
@@ -117,6 +114,11 @@ public class AccountData implements PasswordInfo {
 	}
 
 	// Regular fields
+
+	@Override
+	public String getName() {
+		return this.name;
+	}
 
 	@Override
 	public long getId() {

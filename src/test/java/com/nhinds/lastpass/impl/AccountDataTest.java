@@ -24,14 +24,15 @@ public class AccountDataTest {
 
 	@Before
 	public void setup() {
-		this.accountData = new AccountData(1, NAME_BYTES, GROUP_BYTES, "http://foo/bar/baz", "extra", "favourite", "from", USERNAME_BYTES,
-				PASSWORD_BYTES, "passwordProtected", "sn", "lastTouched", "autoLogin", "neverAutofill", "realmData", "fiid", "customJs",
-				"submitId", "captchaId", "urid", "basicAuthorization", "method", "action", "groupId", "deleted", "attachKey",
-				"attachPresent", "individualShare", "unknown1", this.decryptionProvider);
 		when(this.decryptionProvider.decrypt(NAME_BYTES)).thenReturn("acName");
 		when(this.decryptionProvider.decrypt(GROUP_BYTES)).thenReturn("acGroup");
 		when(this.decryptionProvider.decrypt(USERNAME_BYTES)).thenReturn("acUser");
 		when(this.decryptionProvider.decrypt(PASSWORD_BYTES)).thenReturn("acPass");
+
+		this.accountData = new AccountData(1, NAME_BYTES, GROUP_BYTES, "http://foo/bar/baz", "extra", "favourite", "from", USERNAME_BYTES,
+				PASSWORD_BYTES, "passwordProtected", "sn", "lastTouched", "autoLogin", "neverAutofill", "realmData", "fiid", "customJs",
+				"submitId", "captchaId", "urid", "basicAuthorization", "method", "action", "groupId", "deleted", "attachKey",
+				"attachPresent", "individualShare", "unknown1", this.decryptionProvider);
 	}
 
 	@Test
@@ -65,6 +66,9 @@ public class AccountDataTest {
 
 	@Test
 	public void testName() {
+		// Should decrypt at construction before getName() is called
+		verify(this.decryptionProvider).decrypt(NAME_BYTES);
+
 		assertEquals("acName", this.accountData.getName());
 		assertEquals("acName", this.accountData.getName());
 
