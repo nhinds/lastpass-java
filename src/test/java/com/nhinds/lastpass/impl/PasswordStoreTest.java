@@ -131,7 +131,8 @@ public class PasswordStoreTest {
 		when(hostMatch.getUrl()).thenReturn("http://hostonly#");
 		final AccountData ipMatch = mock(AccountData.class);
 		when(ipMatch.getUrl()).thenReturn("https://1.2.3.4");
-		this.accounts.putAll(ImmutableMap.of(1L, domainMatch, 2L, domainAlias, 3L, subdomainMatch, 4L, hostMatch, 5L, ipMatch));
+		final AccountData ftpMatch = mock(AccountData.class);
+		when(ftpMatch.getUrl()).thenReturn("ftp://myhost.com");
 		// Non-matching urls
 		final AccountData domainMismatch = mock(AccountData.class);
 		when(domainMismatch.getUrl()).thenReturn("http://example.com");
@@ -145,12 +146,12 @@ public class PasswordStoreTest {
 		when(invalidUrl.getUrl()).thenReturn(":notvalid:url!");
 		final AccountData invalidUrl2 = mock(AccountData.class);
 		when(invalidUrl2.getUrl()).thenReturn("notvalidurl");
-		this.accounts.putAll(ImmutableMap.of(11L, domainMismatch, 12L, ipMismatch, 13L, subdomainMismatch, 14L, hostMismatch, 15L,
-				invalidUrl));
-		this.accounts.put(16L, invalidUrl2);
+		this.accounts.putAll(ImmutableMap.<Long, AccountData> builder().put(1L, domainMatch).put(2L, domainAlias).put(3L, subdomainMatch)
+				.put(4L, hostMatch).put(5L, ipMatch).put(6L, ftpMatch).put(11L, domainMismatch).put(12L, ipMismatch)
+				.put(13L, subdomainMismatch).put(14L, hostMismatch).put(15L, invalidUrl).put(16L, invalidUrl2).build());
 
 		final Collection<PasswordInfo> passwords = this.passwordStore.getPasswordsByHostname("myhost.com");
 
-		assertThat(passwords, containsInAnyOrder((PasswordInfo) domainMatch, domainAlias, subdomainMatch, hostMatch, ipMatch));
+		assertThat(passwords, containsInAnyOrder((PasswordInfo) domainMatch, domainAlias, subdomainMatch, hostMatch, ipMatch, ftpMatch));
 	}
 }

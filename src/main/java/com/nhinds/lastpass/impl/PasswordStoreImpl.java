@@ -23,8 +23,8 @@ public class PasswordStoreImpl implements PasswordStore {
 	}
 
 	@Override
-	public Collection<? extends PasswordInfo> getPasswords() {
-		return this.passwordStoreReader.getAccounts().values();
+	public Collection<PasswordInfo> getPasswords() {
+		return Collections.<PasswordInfo> unmodifiableCollection(this.passwordStoreReader.getAccounts().values());
 	}
 
 	@Override

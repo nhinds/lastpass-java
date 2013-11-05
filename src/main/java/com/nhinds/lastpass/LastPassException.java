@@ -1,5 +1,6 @@
 package com.nhinds.lastpass;
 
+/** General exception for problems during LastPass operations */
 public class LastPassException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
@@ -15,4 +16,4 @@ public class LastPassException extends RuntimeException {
 		super(message, cause);
 	}
 
-	}
+}

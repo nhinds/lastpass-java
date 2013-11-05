@@ -2,6 +2,13 @@ package com.nhinds.lastpass;
 
 import java.io.File;
 
+import com.nhinds.lastpass.impl.LastPassImpl;
+
+/**
+ * Main entry point to LastPass password stores.
+ * 
+ * @see LastPassImpl
+ */
 public interface LastPass {
 	/** Represents login progress */
 	enum ProgressStatus {
@@ -24,7 +31,9 @@ public interface LastPass {
 		 * @return The password store for the configured user
 		 * @throws GoogleAuthenticatorRequired
 		 *             if a one-time password is required. In this case, prompt the user for a one-time password then call
-		 *             {@link #getPasswordStore(String)}
+		 *             {@link #getPasswordStore(String, String, ProgressListener)}
+		 * @throws LastPassException
+		 *             if there is an error logging in
 		 */
 		PasswordStore getPasswordStore(ProgressListener listener) throws GoogleAuthenticatorRequired;
 
@@ -39,6 +48,8 @@ public interface LastPass {
 		 * @param listener
 		 *            Listener to notify of status changes while getting the password store, may be null
 		 * @return The password store for the configured user
+		 * @throws LastPassException
+		 *             if there is an error logging in
 		 */
 		PasswordStore getPasswordStore(String otp, String trustLabel, ProgressListener listener);
 	}
@@ -51,12 +62,10 @@ public interface LastPass {
 	 * @param password
 	 *            The password for the LastPass account
 	 * @param cacheFile
-	 *            TODO use this
+	 *            The file used to cache login and account data for offline logins. May be null.
 	 * @param deviceId
 	 *            The identifier for the current device (may be null, in which case the device will not be able to be trusted)
 	 * @return A builder which can retrieve the password store for the given user
-	 * @throws LastPassException
-	 *             if there is an error logging in
 	 */
 	PasswordStoreBuilder getPasswordStoreBuilder(String username, String password, File cacheFile, String deviceId);
 }
