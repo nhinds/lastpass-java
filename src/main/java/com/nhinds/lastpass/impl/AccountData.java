@@ -30,7 +30,7 @@ public class AccountData implements PasswordInfo {
 	private final String name;
 	private final EncryptedString group;
 	private final String url;
-	private final String extra;
+	private final EncryptedString extra;
 	private final String favourite;
 	private final String sharedFromId;
 	private final EncryptedString username;
@@ -41,7 +41,7 @@ public class AccountData implements PasswordInfo {
 	private final String autoLogin;
 	private final String neverAutofill;
 	private final String realmData;
-	private final String fiid;
+	private final EncryptedString fiid;
 	private final String customJs;
 	private final String submitId;
 	private final String captchaId;
@@ -57,11 +57,11 @@ public class AccountData implements PasswordInfo {
 	private final String unknown1;
 	private final DecryptionProvider decryptionProvider;
 
-	public AccountData(final long id, final byte[] name, final byte[] group, final String url, final String extra, final String favourite,
-			final String sharedFromId,
-			final byte[] username, final byte[] password, final String passwordProtected, final String sn, final String lastTouched, final String autoLogin,
-			final String neverAutofill, final String realmData, final String fiid, final String customJs, final String submitId, final String captchaId, final String urid,
-			final String basicAuthorization, final String method, final String action, final String groupId, final String deleted, final String attachKey,
+	public AccountData(final long id, final byte[] name, final byte[] group, final String url, final byte[] extra, final String favourite,
+			final String sharedFromId, final byte[] username, final byte[] password, final String passwordProtected, final String sn,
+			final String lastTouched, final String autoLogin, final String neverAutofill, final String realmData, final byte[] fiid,
+			final String customJs, final String submitId, final String captchaId, final String urid, final String basicAuthorization,
+			final String method, final String action, final String groupId, final String deleted, final String attachKey,
 			final String attachPresent, final String individualShare, final String unknown1, final DecryptionProvider decryptionProvider) {
 		this.id = id;
 		// Decrypt the name up front because it is normally used for displaying/sorting. This also ensures that the decryption provider has
@@ -69,7 +69,7 @@ public class AccountData implements PasswordInfo {
 		this.name = decryptionProvider.decrypt(name);
 		this.group = new EncryptedString(group);
 		this.url = url;
-		this.extra = extra;
+		this.extra = new EncryptedString(extra);
 		this.favourite = favourite;
 		this.sharedFromId = sharedFromId;
 		this.username = new EncryptedString(username);
@@ -80,7 +80,7 @@ public class AccountData implements PasswordInfo {
 		this.autoLogin = autoLogin;
 		this.neverAutofill = neverAutofill;
 		this.realmData = realmData;
-		this.fiid = fiid;
+		this.fiid = new EncryptedString(fiid);
 		this.customJs = customJs;
 		this.submitId = submitId;
 		this.captchaId = captchaId;
@@ -113,6 +113,14 @@ public class AccountData implements PasswordInfo {
 		return this.password.get();
 	}
 
+	public String getExtra() {
+		return this.extra.get();
+	}
+
+	public String getFiid() {
+		return this.fiid.get();
+	}
+
 	// Regular fields
 
 	@Override
@@ -128,10 +136,6 @@ public class AccountData implements PasswordInfo {
 	@Override
 	public String getUrl() {
 		return this.url;
-	}
-
-	public String getExtra() {
-		return this.extra;
 	}
 
 	public String getFavourite() {
@@ -164,10 +168,6 @@ public class AccountData implements PasswordInfo {
 
 	public String getRealmData() {
 		return this.realmData;
-	}
-
-	public String getFiid() {
-		return this.fiid;
 	}
 
 	public String getCustomJs() {

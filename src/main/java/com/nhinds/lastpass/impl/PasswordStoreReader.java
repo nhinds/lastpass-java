@@ -113,7 +113,7 @@ public class PasswordStoreReader {
 		final byte[] name = readItem(acctIn);
 		final byte[] group = readItem(acctIn);
 		final String url = readHexItem(acctIn);
-		final String extra = readStringItem(acctIn);
+		final byte[] extra = readItem(acctIn);
 		final String favourite = readStringItem(acctIn);
 		final String sharedFromId = readStringItem(acctIn);
 		final byte[] username = readItem(acctIn);
@@ -124,7 +124,7 @@ public class PasswordStoreReader {
 		final String autoLogin = readStringItem(acctIn);
 		final String neverAutofill = readStringItem(acctIn);
 		final String realmData = readStringItem(acctIn);
-		final String fiid = readStringItem(acctIn);
+		final byte[] fiid = readItem(acctIn);
 		final String customJs = readStringItem(acctIn);
 		final String submitId = readStringItem(acctIn);
 		final String captchaId = readStringItem(acctIn);
