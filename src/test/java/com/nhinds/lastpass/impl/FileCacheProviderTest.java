@@ -41,14 +41,9 @@ public class FileCacheProviderTest {
 		this.cacheFile = this.temporaryFolder.newFile();
 	}
 
-	@Test
-	public void nullFileReturnsNullAndDoesNotStoreData() throws IOException {
-		final FileCacheProvider provider = new FileCacheProvider(null);
-		assertNull(provider.getIterations(USER));
-		assertNull(provider.getAccountVersion(USER));
-		assertNull(provider.getAccountData(USER));
-
-		provider.storeAccountData(USER, 1, 2, getAccountDataInputStream());
+	@Test(expected = NullPointerException.class)
+	public void nullFileThrowsException() throws IOException {
+		new FileCacheProvider(null);
 	}
 	
 	@Test
