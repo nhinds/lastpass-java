@@ -3,8 +3,6 @@ package com.nhinds.lastpass.impl;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-import java.io.File;
-
 import org.junit.Test;
 
 import com.google.api.client.http.HttpTransport;
@@ -14,8 +12,9 @@ public class LastPassTest {
 	@Test
 	public void getPasswordStoreBuilderReturnsConfiguredBuilder() {
 		final HttpTransport transport = mock(HttpTransport.class);
-		final PasswordStoreBuilder passwordStoreBuilder = new LastPassImpl(transport).getPasswordStoreBuilder("u", "b", new File("cache"),
-				"id");
+		final CacheProvider cacheProvider = mock(CacheProvider.class);
+		final PasswordStoreBuilder passwordStoreBuilder = new LastPassImpl(cacheProvider, transport)
+				.getPasswordStoreBuilder("u", "b", "id");
 		assertEquals(new LastPassBuilderImpl(transport, "u", "b", null, null), passwordStoreBuilder);
 	}
 }

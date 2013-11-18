@@ -1,13 +1,10 @@
 package com.nhinds.lastpass;
 
-import java.io.File;
-
-import com.nhinds.lastpass.impl.LastPassImpl;
 
 /**
  * Main entry point to LastPass password stores.
  * 
- * @see LastPassImpl
+ * @see LastPassFactory
  */
 public interface LastPass {
 	/** Represents login progress */
@@ -61,11 +58,9 @@ public interface LastPass {
 	 *            The LastPass username to log in with
 	 * @param password
 	 *            The password for the LastPass account
-	 * @param cacheFile
-	 *            The file used to cache login and account data for offline logins. May be null.
 	 * @param deviceId
 	 *            The identifier for the current device (may be null, in which case the device will not be able to be trusted)
 	 * @return A builder which can retrieve the password store for the given user
 	 */
-	PasswordStoreBuilder getPasswordStoreBuilder(String username, String password, File cacheFile, String deviceId);
+	PasswordStoreBuilder getPasswordStoreBuilder(String username, String password, String deviceId);
 }
