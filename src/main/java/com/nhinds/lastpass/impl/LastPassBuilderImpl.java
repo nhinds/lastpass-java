@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -22,6 +25,8 @@ import com.nhinds.lastpass.PasswordStore;
 import com.nhinds.lastpass.impl.LastPassLoginProvider.LoginResult;
 
 class LastPassBuilderImpl implements PasswordStoreBuilder {
+	private static final Logger LOGGER = LoggerFactory.getLogger(LastPassBuilderImpl.class);
+	
 	static final String ACCOUNT_DATA_URL = "https://lastpass.com/getaccts.php?mobile=1&hash=0.0";
 	static final String SESSION_COOKIE_NAME = "PHPSESSID";
 
@@ -81,6 +86,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 
 			InputStream accountData = getCachedAccountData(loginResult, loginResult.getAccountsVersion(), loginResult.getIterations());
 			if (accountData == null) {
+				LOGGER.debug("No cached account data found");
 				if (loginResult.getSessionId() == null)
 					throw new LastPassException("LastPass is offline and no cached account data is available");
 				if (listener != null)
@@ -90,6 +96,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 				request.getHeaders().setCookie(SESSION_COOKIE_NAME + '=' + loginResult.getSessionId());
 				final HttpResponse response = request.execute();
 				accountData = new CachingInputStream(loginResult, response.getContent());
+				LOGGER.debug("Account data retrieved");
 			}
 
 			if (listener != null)
@@ -107,6 +114,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 		try {
 			final Integer cachedAccountsVersion = this.cacheProvider.getAccountVersion(this.username);
 			if (cachedAccountsVersion != null && cachedAccountsVersion.equals(accountsVersion) && getIterations() == iterations) {
+				LOGGER.debug("Cached account data found");
 				return this.cacheProvider.getAccountData(this.username);
 			}
 		} catch (IOException ignore) {

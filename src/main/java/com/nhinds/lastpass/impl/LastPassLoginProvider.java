@@ -7,6 +7,9 @@ import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -22,6 +25,7 @@ import com.nhinds.lastpass.impl.dto.LastPassOk;
 import com.nhinds.lastpass.impl.dto.LastPassResponse;
 
 public class LastPassLoginProvider {
+	private static final Logger LOGGER = LoggerFactory.getLogger(LastPassLoginProvider.class);
 
 	public static class LoginResult {
 		private final String sessionId;
@@ -85,6 +89,8 @@ public class LastPassLoginProvider {
 
 	private LoginResult login(String username, String password, final String otp, final String trustLabel, final int iterations,
 			boolean serverProvided) throws GeneralSecurityException, IOException {
+		LOGGER.debug("Sending login request (serverProvided: {})", serverProvided);
+		
 		byte[] key = this.keyProvider.getKey(username, password, iterations);
 		final String hash = this.keyProvider.getHash(key, password, iterations);
 		final Map<String, Object> options = new HashMap<String, Object>();
@@ -111,8 +117,10 @@ public class LastPassLoginProvider {
 					new UrlEncodedContent(options)).execute();
 			response = clientResponse.parseAs(LastPassResponse.class);
 		} catch (final UnknownHostException e) {
+			LOGGER.debug("Unknown host, attempting offline login", e);
 			return offlineLogin(username, iterations, key, e);
 		} catch (final ConnectException e) {
+			LOGGER.debug("Connect exception, attempting offline login", e);
 			return offlineLogin(username, iterations, key, e);
 		} catch (final RuntimeException e) {
 			throw new LastPassException("Error parsing login response: " + e.getMessage(), e);
@@ -122,12 +130,14 @@ public class LastPassLoginProvider {
 			// Try interpreting it as an OK response
 			LastPassOk ok = response.getOk();
 			if (ok != null) {
+				LOGGER.debug("Login successful: {}", ok);
 				return new LoginResult(ok.getSessionId(), key, ok.getAccountsVersion(), iterations);
 			}
 
 			// Try interpreting it as an error response
-			if (response.getError() != null) {
-				final LastPassError error = response.getError();
+			final LastPassError error = response.getError();
+			if (error != null) {
+				LOGGER.debug("Login unsuccessful: {}", error);
 				// If the error is caused by using the incorrect number of
 				// iterations in the encryption, try again with the correct number
 				if (error.getIterations() != null && error.getIterations().intValue() != iterations) {

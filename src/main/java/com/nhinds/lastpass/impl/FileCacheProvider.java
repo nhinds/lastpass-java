@@ -8,6 +8,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingInputStream;
@@ -21,6 +24,7 @@ import com.google.common.io.CountingInputStream;
  * threads at the same time)
  */
 public class FileCacheProvider implements CacheProvider {
+	private static final Logger LOGGER = LoggerFactory.getLogger(FileCacheProvider.class);
 
 	private final File cacheFile;
 	private String username;
@@ -30,7 +34,9 @@ public class FileCacheProvider implements CacheProvider {
 
 	public FileCacheProvider(File cacheFile) {
 		this.cacheFile = Preconditions.checkNotNull(cacheFile);
+		LOGGER.debug("Caching to file {}", cacheFile);
 		if (cacheFile.isFile()) {
+			LOGGER.debug("Cache file {} exists", cacheFile);
 			try {
 				final CountingInputStream countingInput = new CountingInputStream(new FileInputStream(cacheFile));
 				final DataInputStream cacheInput = new DataInputStream(countingInput);

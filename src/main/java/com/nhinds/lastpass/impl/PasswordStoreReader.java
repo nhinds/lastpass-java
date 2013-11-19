@@ -10,11 +10,15 @@ import java.util.Map;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
 import com.nhinds.lastpass.LastPassException;
 
 public class PasswordStoreReader {
+	private static final Logger LOGGER = LoggerFactory.getLogger(PasswordStoreReader.class);
+	
 	private static final String END_MARKER_CHUNK_ID = "ENDM";
 	private static final String ACCT_CHUNK_ID = "ACCT";
 	private static final String EQDN_CHUNK_ID = "EQDN";
@@ -46,6 +50,7 @@ public class PasswordStoreReader {
 	}
 
 	private void parseChunks(final InputStream accountsStream) throws IOException {
+		LOGGER.debug("Start parsing blob");
 		final Map<Long, Collection<String>> domainsById = new HashMap<Long, Collection<String>>();
 		// # LastPass blob chunk is made up of 4-byte ID, 4-byte size and payload of that size
 		// # Example:
@@ -58,8 +63,10 @@ public class PasswordStoreReader {
 			final byte[] idBytes = new byte[4];
 			in.readFully(idBytes);
 			final String id = new String(idBytes);
+			LOGGER.trace("Parsing chunk {}", id);
 
 			if (END_MARKER_CHUNK_ID.equals(id)) {
+				LOGGER.debug("End of blob");
 				// End of stream
 				break;
 			} else {
@@ -110,6 +117,7 @@ public class PasswordStoreReader {
 	private void parseAccountData(final DataInputStream acctIn) throws IOException {
 		// TODO how many of these "strings" are not strings?
 		final long id = readLongItem(acctIn);
+		LOGGER.trace("Parsing account data {}", id);
 		final byte[] name = readItem(acctIn);
 		final byte[] group = readItem(acctIn);
 		final String url = readHexItem(acctIn);
@@ -146,6 +154,7 @@ public class PasswordStoreReader {
 	private static void parseEquivalentDomain(final DataInputStream eqdnIn, final Map<Long, Collection<String>> domainsById)
 			throws IOException {
 		final long id = readLongItem(eqdnIn);
+		LOGGER.trace("Parsing equivalent domain {}", id);
 		final String domain = readHexItem(eqdnIn);
 		Collection<String> domainsForId = domainsById.get(id);
 		if (domainsForId == null) {
