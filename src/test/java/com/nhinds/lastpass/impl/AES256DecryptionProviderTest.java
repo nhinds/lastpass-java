@@ -33,7 +33,8 @@ public class AES256DecryptionProviderTest {
 		final List<Object[]> params = new ArrayList<Object[]>();
 		for (final byte[] key : ImmutableList.of(key1, key2)) {
 			for (final String plainText : plainTexts) {
-				params.add(new Object[] { key, encrypt(plainText, key), plainText });
+				params.add(new Object[] { key, encryptCBCPlain(plainText, key), plainText });
+				params.add(new Object[] { key, encryptECBPlain(plainText, key), plainText });
 			}
 			// Empty cipherText should equal empty plaintext
 			params.add(new Object[] { key, new byte[0], "" });
@@ -41,7 +42,7 @@ public class AES256DecryptionProviderTest {
 		return params;
 	}
 
-	private static byte[] encrypt(final String plaintext, final byte[] encryptionKey) {
+	private static byte[] encryptCBCPlain(final String plaintext, final byte[] encryptionKey) {
 		try {
 			final byte[] iv = new byte[16];
 			new Random().nextBytes(iv);
@@ -53,6 +54,16 @@ public class AES256DecryptionProviderTest {
 			System.arraycopy(iv, 0, encryptedData, 1, iv.length);
 			System.arraycopy(cipherText, 0, encryptedData, iv.length + 1, cipherText.length);
 			return encryptedData;
+		} catch (final GeneralSecurityException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static byte[] encryptECBPlain(String plainText, byte[] encryptionKey) {
+		try {
+			final Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(encryptionKey, "AES"));
+			return cipher.doFinal(plainText.getBytes());
 		} catch (final GeneralSecurityException e) {
 			throw new RuntimeException(e);
 		}
