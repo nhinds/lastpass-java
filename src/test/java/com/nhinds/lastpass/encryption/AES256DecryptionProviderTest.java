@@ -12,13 +12,14 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.google.common.collect.ImmutableList;
-import com.nhinds.lastpass.encryption.AES256DecryptionProvider;
+import com.nhinds.lastpass.encryption.AES256EncryptionProvider;
 
 @RunWith(Parameterized.class)
 public class AES256DecryptionProviderTest {
@@ -73,15 +74,27 @@ public class AES256DecryptionProviderTest {
 	private final byte[] encryptionKey;
 	private final byte[] cipherText;
 	private final String plainText;
+	
+	private AES256EncryptionProvider provider;
 
 	public AES256DecryptionProviderTest(final byte[] encryptionKey, final byte[] cipherText, final String plainText) {
 		this.encryptionKey = encryptionKey;
 		this.cipherText = cipherText;
 		this.plainText = plainText;
 	}
+	
+	@Before
+	public void setup() {
+		provider = new AES256EncryptionProvider(this.encryptionKey);
+	}
 
 	@Test
 	public void decrypt() {
-		assertEquals(this.plainText, new AES256DecryptionProvider(this.encryptionKey).decrypt(this.cipherText));
+		assertEquals(this.plainText, provider.decrypt(this.cipherText));
+	}
+
+	@Test
+	public void roundtrip() {
+		assertEquals(this.plainText, provider.decrypt(provider.encrypt(this.plainText)));
 	}
 }

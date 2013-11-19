@@ -35,7 +35,7 @@ import com.google.common.io.ByteStreams;
 import com.nhinds.lastpass.LastPass.ProgressListener;
 import com.nhinds.lastpass.LastPass.ProgressStatus;
 import com.nhinds.lastpass.PasswordStore;
-import com.nhinds.lastpass.encryption.AES256DecryptionProvider;
+import com.nhinds.lastpass.encryption.AES256EncryptionProvider;
 import com.nhinds.lastpass.encryption.EncryptionProvider;
 import com.nhinds.lastpass.impl.LastPassBuilderImpl.PasswordStoreFactory;
 import com.nhinds.lastpass.impl.LastPassLoginProvider.LoginResult;
@@ -164,7 +164,7 @@ public class LastPassBuilderTest {
 		inOrder.verify(listener).statusChanged(ProgressStatus.RETRIEVING);
 		inOrder.verify(this.httpRequest).execute();
 		inOrder.verify(listener).statusChanged(ProgressStatus.DECRYPTING);
-		inOrder.verify(this.passwordStoreFactory).getPasswordStore(any(InputStream.class), eq(new AES256DecryptionProvider(KEY)));
+		inOrder.verify(this.passwordStoreFactory).getPasswordStore(any(InputStream.class), eq(new AES256EncryptionProvider(KEY)));
 	}
 
 	@Test
@@ -179,7 +179,7 @@ public class LastPassBuilderTest {
 
 		this.lastPassBuilder.getPasswordStore("myOtp", null, null);
 
-		verify(this.passwordStoreFactory).getPasswordStore(accountDataStream, new AES256DecryptionProvider(KEY));
+		verify(this.passwordStoreFactory).getPasswordStore(accountDataStream, new AES256EncryptionProvider(KEY));
 		verify(this.cacheProvider, never()).storeAccountData(anyString(), anyInt(), anyInt(), any(InputStream.class));
 	}
 
@@ -200,9 +200,9 @@ public class LastPassBuilderTest {
 		inOrder.verify(listener).statusChanged(ProgressStatus.LOGGING_IN);
 		inOrder.verify(this.loginProvider).login(USERNAME, PASSWORD, "myOtp", null, 5123);
 		inOrder.verify(listener).statusChanged(ProgressStatus.DECRYPTING);
-		inOrder.verify(this.passwordStoreFactory).getPasswordStore(any(InputStream.class), eq(new AES256DecryptionProvider(KEY)));
+		inOrder.verify(this.passwordStoreFactory).getPasswordStore(any(InputStream.class), eq(new AES256EncryptionProvider(KEY)));
 
-		verify(this.passwordStoreFactory).getPasswordStore(accountDataStream, new AES256DecryptionProvider(KEY));
+		verify(this.passwordStoreFactory).getPasswordStore(accountDataStream, new AES256EncryptionProvider(KEY));
 
 		verify(listener, never()).statusChanged(ProgressStatus.RETRIEVING);
 		verify(this.httpRequest, never()).execute();
@@ -249,7 +249,7 @@ public class LastPassBuilderTest {
 		inOrder.verify(this.httpRequest).addHeader("Cookie", LastPassBuilderImpl.SESSION_COOKIE_NAME + "=610");
 		inOrder.verify(this.httpRequest).execute();
 		inOrder.verify(listener).statusChanged(ProgressStatus.DECRYPTING);
-		inOrder.verify(this.passwordStoreFactory).getPasswordStore(any(InputStream.class), eq(new AES256DecryptionProvider(KEY)));
+		inOrder.verify(this.passwordStoreFactory).getPasswordStore(any(InputStream.class), eq(new AES256EncryptionProvider(KEY)));
 
 		verifyKeyAndReadAccountInputStream();
 		verifyStoreAccountData(4, 50, content);
@@ -269,7 +269,7 @@ public class LastPassBuilderTest {
 		
 		ArgumentCaptor<InputStream> inputStreamCaptor = ArgumentCaptor.forClass(InputStream.class);
 		// Verify the key was correct
-		verify(this.passwordStoreFactory).getPasswordStore(inputStreamCaptor.capture(), eq(new AES256DecryptionProvider(KEY)));
+		verify(this.passwordStoreFactory).getPasswordStore(inputStreamCaptor.capture(), eq(new AES256EncryptionProvider(KEY)));
 		// Read the input stream fully and close it to force the data to be cached
 		InputStream in = inputStreamCaptor.getValue();
 		try {
@@ -298,7 +298,7 @@ public class LastPassBuilderTest {
 	private byte[] verifyKeyAndReadAccountInputStream() throws IOException {
 		ArgumentCaptor<InputStream> inputStreamCaptor = ArgumentCaptor.forClass(InputStream.class);
 		// Verify the key was correct
-		verify(this.passwordStoreFactory).getPasswordStore(inputStreamCaptor.capture(), eq(new AES256DecryptionProvider(KEY)));
+		verify(this.passwordStoreFactory).getPasswordStore(inputStreamCaptor.capture(), eq(new AES256EncryptionProvider(KEY)));
 		// Read the input stream fully and close it to force the data to be cached
 		try {
 			return ByteStreams.toByteArray(inputStreamCaptor.getValue());

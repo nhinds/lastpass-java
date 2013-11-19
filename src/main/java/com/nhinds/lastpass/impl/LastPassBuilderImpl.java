@@ -22,7 +22,7 @@ import com.nhinds.lastpass.LastPass.ProgressListener;
 import com.nhinds.lastpass.LastPass.ProgressStatus;
 import com.nhinds.lastpass.LastPassException;
 import com.nhinds.lastpass.PasswordStore;
-import com.nhinds.lastpass.encryption.AES256DecryptionProvider;
+import com.nhinds.lastpass.encryption.AES256EncryptionProvider;
 import com.nhinds.lastpass.encryption.EncryptionProvider;
 import com.nhinds.lastpass.impl.LastPassLoginProvider.LoginResult;
 
@@ -104,7 +104,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 			if (listener != null)
 				listener.statusChanged(ProgressStatus.DECRYPTING);
 
-			return this.passwordStoreFactory.getPasswordStore(accountData, new AES256DecryptionProvider(loginResult.getKey()));
+			return this.passwordStoreFactory.getPasswordStore(accountData, new AES256EncryptionProvider(loginResult.getKey()));
 		} catch (final IOException e) {
 			throw new LastPassException("Error connecting to LastPass: " + e.getMessage(), e);
 		} catch (final GeneralSecurityException e) {
