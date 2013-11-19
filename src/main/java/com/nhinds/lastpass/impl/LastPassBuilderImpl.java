@@ -148,6 +148,12 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 				this.accountDataCopy.write(b, off, read);
 			return read;
 		}
+		
+		@Override
+		public long skip(long bytesToSkip) throws IOException {
+			byte[] skipped = new byte[(int) bytesToSkip];
+			return read(skipped);
+		}
 
 		@Override
 		public void close() throws IOException {
@@ -155,6 +161,22 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 			InputStream accountData = new ByteArrayInputStream(this.accountDataCopy.toByteArray());
 			LastPassBuilderImpl.this.cacheProvider.storeAccountData(LastPassBuilderImpl.this.username, this.loginResult.getIterations(),
 					this.loginResult.getAccountsVersion(), accountData);
+		}
+		
+		// Simple implementation, does not support mark or reset
+		
+		@Override
+		public boolean markSupported() {
+			return false;
+		}
+		
+		@Override
+		public void mark(int readlimit) {
+		}
+		
+		@Override
+		public synchronized void reset() throws IOException {
+			throw new IOException("mark/reset not supported");
 		}
 	}
 

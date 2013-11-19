@@ -253,6 +253,37 @@ public class LastPassBuilderTest {
 		verifyStoreAccountData(4, 50, content);
 	}
 
+	@Test
+	public void skippedBytesAreWrittenToCacheProvider() throws Exception {
+		when(this.cacheProvider.getAccountVersion(anyString())).thenReturn(null);
+		when(this.cacheProvider.getIterations(anyString())).thenReturn(null);
+		when(this.cacheProvider.getAccountData(anyString())).thenReturn(null);
+
+		final byte[] content = { 1,2,3,4,5,6,7,8,9,10 };
+		when(this.loginProvider.login(USERNAME, PASSWORD, null, null, 1)).thenReturn(new LoginResult("789", KEY, 11, 12));
+		when(this.httpResponse.getContent()).thenReturn(new ByteArrayInputStream(content));
+
+		this.lastPassBuilder.getPasswordStore(null);
+		
+		ArgumentCaptor<InputStream> inputStreamCaptor = ArgumentCaptor.forClass(InputStream.class);
+		// Verify the key was correct
+		verify(this.passwordStoreFactory).getPasswordStore(inputStreamCaptor.capture(), eq(new AESCBCDecryptionProvider(KEY)));
+		// Read the input stream fully and close it to force the data to be cached
+		InputStream in = inputStreamCaptor.getValue();
+		try {
+			assertEquals(1, in.read());
+			assertEquals(2, in.read());
+			in.skip(5);
+			assertEquals(8, in.read());
+			in.skip(2);
+			assertEquals(-1, in.read());
+		} finally {
+			in.close();
+		}
+		
+		verifyStoreAccountData(12, 11, content);
+	}
+
 	private void verifyStoreAccountData(int iterations, int accountsVersion, final byte[] content) throws IOException {
 		// Check the cached data is correct
 		ArgumentCaptor<ByteArrayInputStream> cacheInputStreamCaptor = ArgumentCaptor.forClass(ByteArrayInputStream.class);
