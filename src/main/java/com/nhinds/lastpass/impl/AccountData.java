@@ -3,6 +3,7 @@ package com.nhinds.lastpass.impl;
 import java.util.Arrays;
 
 import com.nhinds.lastpass.PasswordInfo;
+import com.nhinds.lastpass.encryption.EncryptionProvider;
 
 public class AccountData implements PasswordInfo {
 	private class EncryptedString {
@@ -55,14 +56,14 @@ public class AccountData implements PasswordInfo {
 	private final String attachPresent;
 	private final String individualShare;
 	private final String unknown1;
-	private final DecryptionProvider decryptionProvider;
+	private final EncryptionProvider decryptionProvider;
 
 	public AccountData(final long id, final byte[] name, final byte[] group, final String url, final byte[] extra, final String favourite,
 			final String sharedFromId, final byte[] username, final byte[] password, final String passwordProtected, final String sn,
 			final String lastTouched, final String autoLogin, final String neverAutofill, final String realmData, final byte[] fiid,
 			final String customJs, final String submitId, final String captchaId, final String urid, final String basicAuthorization,
 			final String method, final String action, final String groupId, final String deleted, final String attachKey,
-			final String attachPresent, final String individualShare, final String unknown1, final DecryptionProvider decryptionProvider) {
+			final String attachPresent, final String individualShare, final String unknown1, final EncryptionProvider decryptionProvider) {
 		this.id = id;
 		// Decrypt the name up front because it is normally used for displaying/sorting. This also ensures that the decryption provider has
 		// the correct decryption key so future decryptions should succeed if this one does

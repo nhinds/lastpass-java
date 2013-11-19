@@ -10,11 +10,12 @@ import java.util.Collections;
 import com.google.common.net.InternetDomainName;
 import com.nhinds.lastpass.PasswordInfo;
 import com.nhinds.lastpass.PasswordStore;
+import com.nhinds.lastpass.encryption.EncryptionProvider;
 
 public class PasswordStoreImpl implements PasswordStore {
 	private final PasswordStoreReader passwordStoreReader;
 
-	public PasswordStoreImpl(final InputStream accountsStream, final DecryptionProvider decryptionProvider) {
+	public PasswordStoreImpl(final InputStream accountsStream, final EncryptionProvider decryptionProvider) {
 		this(new PasswordStoreReader(accountsStream, decryptionProvider));
 	}
 

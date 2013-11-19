@@ -1,4 +1,4 @@
-package com.nhinds.lastpass.impl;
+package com.nhinds.lastpass.encryption;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -10,7 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.nhinds.lastpass.LastPassException;
 
-class AES256DecryptionProvider extends RequiresSpongyCastle implements DecryptionProvider {
+public class AES256DecryptionProvider extends RequiresSpongyCastle implements EncryptionProvider {
 	private static final String AES_ALGORITHM = "AES";
 	private static final String PKCS5_PADDING = "PKCS5Padding";
 	private static final String CBC_PLAIN_CIPHER = AES_ALGORITHM+"/CBC/"+PKCS5_PADDING;

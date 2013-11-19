@@ -35,6 +35,8 @@ import com.google.common.io.ByteStreams;
 import com.nhinds.lastpass.LastPass.ProgressListener;
 import com.nhinds.lastpass.LastPass.ProgressStatus;
 import com.nhinds.lastpass.PasswordStore;
+import com.nhinds.lastpass.encryption.AES256DecryptionProvider;
+import com.nhinds.lastpass.encryption.EncryptionProvider;
 import com.nhinds.lastpass.impl.LastPassBuilderImpl.PasswordStoreFactory;
 import com.nhinds.lastpass.impl.LastPassLoginProvider.LoginResult;
 
@@ -85,7 +87,7 @@ public class LastPassBuilderTest {
 		when(this.loginProvider.login(USERNAME, PASSWORD, null, null, 1)).thenReturn(new LoginResult("789", KEY, 11, 12));
 		when(this.httpResponse.getContent()).thenReturn(new ByteArrayInputStream(content));
 		final PasswordStore mockPasswordStore = mock(PasswordStore.class);
-		when(this.passwordStoreFactory.getPasswordStore(any(InputStream.class), any(DecryptionProvider.class))).thenReturn(
+		when(this.passwordStoreFactory.getPasswordStore(any(InputStream.class), any(EncryptionProvider.class))).thenReturn(
 				mockPasswordStore);
 
 		PasswordStore passwordStore = this.lastPassBuilder.getPasswordStore(null);
@@ -117,7 +119,7 @@ public class LastPassBuilderTest {
 		inOrder.verify(listener).statusChanged(ProgressStatus.RETRIEVING);
 		inOrder.verify(this.httpRequest).execute();
 		inOrder.verify(listener).statusChanged(ProgressStatus.DECRYPTING);
-		inOrder.verify(this.passwordStoreFactory).getPasswordStore(any(InputStream.class), any(DecryptionProvider.class));
+		inOrder.verify(this.passwordStoreFactory).getPasswordStore(any(InputStream.class), any(EncryptionProvider.class));
 	}
 
 	@Test
@@ -130,7 +132,7 @@ public class LastPassBuilderTest {
 		when(this.loginProvider.login(USERNAME, PASSWORD, "otp", "trustMe", 1)).thenReturn(new LoginResult("12345", KEY, 65, 55));
 		when(this.httpResponse.getContent()).thenReturn(new ByteArrayInputStream(content));
 		final PasswordStore mockPasswordStore = mock(PasswordStore.class);
-		when(this.passwordStoreFactory.getPasswordStore(any(InputStream.class), any(DecryptionProvider.class))).thenReturn(
+		when(this.passwordStoreFactory.getPasswordStore(any(InputStream.class), any(EncryptionProvider.class))).thenReturn(
 				mockPasswordStore);
 
 		PasswordStore passwordStore = this.lastPassBuilder.getPasswordStore("otp", "trustMe", null);

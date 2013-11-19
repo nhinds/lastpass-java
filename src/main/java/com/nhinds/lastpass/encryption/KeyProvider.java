@@ -1,4 +1,4 @@
-package com.nhinds.lastpass.impl;
+package com.nhinds.lastpass.encryption;
 
 import java.security.GeneralSecurityException;
 

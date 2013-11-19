@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
 import com.nhinds.lastpass.LastPassException;
+import com.nhinds.lastpass.encryption.EncryptionProvider;
 
 public class PasswordStoreReader {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PasswordStoreReader.class);
@@ -23,11 +24,11 @@ public class PasswordStoreReader {
 	private static final String ACCT_CHUNK_ID = "ACCT";
 	private static final String EQDN_CHUNK_ID = "EQDN";
 
-	private final DecryptionProvider decryptionProvider;
+	private final EncryptionProvider decryptionProvider;
 	private final Map<Long, AccountData> accounts = new HashMap<Long, AccountData>();
 	private final Map<String, Collection<String>> domains = new HashMap<String, Collection<String>>();
 
-	public PasswordStoreReader(final InputStream accountsStream, final DecryptionProvider decryptionProvider) {
+	public PasswordStoreReader(final InputStream accountsStream, final EncryptionProvider decryptionProvider) {
 		this.decryptionProvider = decryptionProvider;
 		try {
 			parseChunks(accountsStream);

@@ -22,6 +22,8 @@ import com.nhinds.lastpass.LastPass.ProgressListener;
 import com.nhinds.lastpass.LastPass.ProgressStatus;
 import com.nhinds.lastpass.LastPassException;
 import com.nhinds.lastpass.PasswordStore;
+import com.nhinds.lastpass.encryption.AES256DecryptionProvider;
+import com.nhinds.lastpass.encryption.EncryptionProvider;
 import com.nhinds.lastpass.impl.LastPassLoginProvider.LoginResult;
 
 class LastPassBuilderImpl implements PasswordStoreBuilder {
@@ -189,7 +191,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 	}
 
 	static class PasswordStoreFactory {
-		public PasswordStore getPasswordStore(final InputStream accountsStream, final DecryptionProvider decryptionProvider) {
+		public PasswordStore getPasswordStore(final InputStream accountsStream, final EncryptionProvider decryptionProvider) {
 			return new PasswordStoreImpl(accountsStream, decryptionProvider);
 		}
 	}

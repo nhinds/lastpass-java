@@ -20,6 +20,7 @@ import com.google.api.client.http.UrlEncodedContent;
 import com.google.api.client.xml.XmlNamespaceDictionary;
 import com.google.api.client.xml.XmlObjectParser;
 import com.nhinds.lastpass.LastPassException;
+import com.nhinds.lastpass.encryption.KeyProvider;
 import com.nhinds.lastpass.impl.dto.LastPassError;
 import com.nhinds.lastpass.impl.dto.LastPassOk;
 import com.nhinds.lastpass.impl.dto.LastPassResponse;

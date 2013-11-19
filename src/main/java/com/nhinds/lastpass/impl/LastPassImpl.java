@@ -11,6 +11,7 @@ import com.nhinds.lastpass.GoogleAuthenticatorRequired;
 import com.nhinds.lastpass.LastPass;
 import com.nhinds.lastpass.LastPassFactory;
 import com.nhinds.lastpass.PasswordStore;
+import com.nhinds.lastpass.encryption.PBKDF2SHA256KeyProvider;
 
 public class LastPassImpl implements LastPass {
 

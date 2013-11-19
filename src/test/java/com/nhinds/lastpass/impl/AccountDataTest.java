@@ -10,6 +10,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.nhinds.lastpass.encryption.EncryptionProvider;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class AccountDataTest {
@@ -20,7 +22,7 @@ public class AccountDataTest {
 	private static final byte[] EXTRA_BYTES = new byte[] { 5 };
 	private static final byte[] FIID_BYTES = new byte[] { 6 };
 	@Mock
-	private DecryptionProvider decryptionProvider;
+	private EncryptionProvider decryptionProvider;
 
 	private AccountData accountData;
 

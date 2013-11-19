@@ -1,4 +1,4 @@
-package com.nhinds.lastpass.impl;
+package com.nhinds.lastpass.encryption;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -6,6 +6,8 @@ import static org.junit.Assert.assertEquals;
 import java.security.GeneralSecurityException;
 
 import org.junit.Test;
+
+import com.nhinds.lastpass.encryption.PBKDF2SHA256KeyProvider;
 
 public class PBKDF2SHA256KeyProviderTest {
 

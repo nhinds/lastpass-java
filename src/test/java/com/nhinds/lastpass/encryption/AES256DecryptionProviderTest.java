@@ -1,4 +1,4 @@
-package com.nhinds.lastpass.impl;
+package com.nhinds.lastpass.encryption;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,6 +18,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.google.common.collect.ImmutableList;
+import com.nhinds.lastpass.encryption.AES256DecryptionProvider;
 
 @RunWith(Parameterized.class)
 public class AES256DecryptionProviderTest {
