@@ -20,7 +20,7 @@ import org.junit.runners.Parameterized.Parameters;
 import com.google.common.collect.ImmutableList;
 
 @RunWith(Parameterized.class)
-public class AESCBCDecryptionProviderTest {
+public class AES256DecryptionProviderTest {
 	private static Collection<String> plainTexts = ImmutableList.of("", "a", "some very long string that should exceed the block size");
 
 	@Parameters
@@ -62,7 +62,7 @@ public class AESCBCDecryptionProviderTest {
 	private final byte[] cipherText;
 	private final String plainText;
 
-	public AESCBCDecryptionProviderTest(final byte[] encryptionKey, final byte[] cipherText, final String plainText) {
+	public AES256DecryptionProviderTest(final byte[] encryptionKey, final byte[] cipherText, final String plainText) {
 		this.encryptionKey = encryptionKey;
 		this.cipherText = cipherText;
 		this.plainText = plainText;
@@ -70,6 +70,6 @@ public class AESCBCDecryptionProviderTest {
 
 	@Test
 	public void decrypt() {
-		assertEquals(this.plainText, new AESCBCDecryptionProvider(this.encryptionKey).decrypt(this.cipherText));
+		assertEquals(this.plainText, new AES256DecryptionProvider(this.encryptionKey).decrypt(this.cipherText));
 	}
 }

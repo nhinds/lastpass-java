@@ -102,7 +102,7 @@ class LastPassBuilderImpl implements PasswordStoreBuilder {
 			if (listener != null)
 				listener.statusChanged(ProgressStatus.DECRYPTING);
 
-			return this.passwordStoreFactory.getPasswordStore(accountData, new AESCBCDecryptionProvider(loginResult.getKey()));
+			return this.passwordStoreFactory.getPasswordStore(accountData, new AES256DecryptionProvider(loginResult.getKey()));
 		} catch (final IOException e) {
 			throw new LastPassException("Error connecting to LastPass: " + e.getMessage(), e);
 		} catch (final GeneralSecurityException e) {

@@ -10,10 +10,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.nhinds.lastpass.LastPassException;
 
-class AESCBCDecryptionProvider extends RequiresSpongyCastle implements DecryptionProvider {
+class AES256DecryptionProvider extends RequiresSpongyCastle implements DecryptionProvider {
 	private final byte[] encryptionKey;
 
-	public AESCBCDecryptionProvider(final byte[] encryptionKey) {
+	public AES256DecryptionProvider(final byte[] encryptionKey) {
 		this.encryptionKey = encryptionKey;
 	}
 
@@ -51,7 +51,7 @@ class AESCBCDecryptionProvider extends RequiresSpongyCastle implements Decryptio
 
 	@Override
 	public boolean equals(Object obj) {
-		return (obj instanceof AESCBCDecryptionProvider)
-				&& Arrays.equals(this.encryptionKey, ((AESCBCDecryptionProvider) obj).encryptionKey);
+		return (obj instanceof AES256DecryptionProvider)
+				&& Arrays.equals(this.encryptionKey, ((AES256DecryptionProvider) obj).encryptionKey);
 	}
 }
