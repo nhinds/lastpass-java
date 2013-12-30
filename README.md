@@ -27,3 +27,7 @@ Usage
 	Collection<? extends PasswordInfo> passwords = store.getPasswordsByHostname("google.com");
 	// Get all passwords
 	Collection<? extends PasswordInfo allPasswords = store.getPasswords();
+
+License
+--------
+`lastpass-java` is released under the [MIT license](LICENSE)
