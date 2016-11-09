@@ -28,6 +28,22 @@ Usage
 	// Get all passwords
 	Collection<? extends PasswordInfo allPasswords = store.getPasswords();
 
+Issues
+------
+
+If you get an error in the unit tests:
+```
+initializationError(com.nhinds.lastpass.encryption.AES256DecryptionProviderTest):
+java.security.InvalidKeyException: Illegal key size
+```
+
+You might need to install the [unlimited strength jurisdiction policy](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html) as
+explained in this [stack overflow](http://stackoverflow.com/questions/3862800/invalidkeyexception-illegal-key-size) post.
+
+
 License
 --------
 `lastpass-java` is released under the [MIT license](LICENSE)
+
+
+
