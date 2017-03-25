@@ -11,6 +11,7 @@ Does not support saving back to lastpass or offline logins (i.e. cached logins)
 Building
 --------
 `mvn install`
+
 Usage
 --------
 	Lastpass lastPass = new LastPassImpl();
