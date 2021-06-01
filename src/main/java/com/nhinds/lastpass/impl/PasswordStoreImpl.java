@@ -71,7 +71,7 @@ public class PasswordStoreImpl implements PasswordStore {
 			if (domainName.isUnderPublicSuffix()) {
 				domainName = domainName.topPrivateDomain();
 			}
-			return domainName.name();
+			return domainName.toString();
 		} catch (final IllegalArgumentException e) {
 			return host;
 		}
